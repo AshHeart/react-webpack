@@ -1,11 +1,40 @@
-const webpack = require('webpack')
+const htmlWebpackPlugin = require('html-webpack-plugin')
+const liveReloadPlugin = require('webpack-livereload-plugin')
+const miniCssExtractPlugin = require('mini-css-extract-plugin')
 const path = require('path')
 const uglifyJsPlugin = require('uglifyjs-webpack-plugin')
-const liveReloadPlugin = require('webpack-livereload-plugin')
-const htmlWebpackPlugin = require('html-webpack-plugin')
+const webpack = require('webpack')
+
+let plugins = []
 
 module.exports = (env = {}) => {
     const isProduction = env.production === true
+
+    plugins.push(new miniCssExtractPlugin({
+        filename: 'css/main.bundle.css'
+    }))
+
+    plugins.push(new htmlWebpackPlugin({
+        template: 'src/index.html',
+        filename: 'index.html',
+        minify: true
+    }))
+
+    if(isProduction) {
+        plugins.push(new uglifyJsPlugin({
+            test: /\.js($|\?)/i,
+            uglifyOptions: {
+                output: {
+                    comments: false,
+                     beautify: false
+                }
+            }
+        }))
+    } else {
+        plugins.push(new liveReloadPlugin())
+
+        plugins.push(new webpack.HotModuleReplacementPlugin())
+    }
 
     return {
         entry: {main: './src/main.js'},
@@ -16,34 +45,7 @@ module.exports = (env = {}) => {
         resolve: {
             extensions: ['.js', '.jsx']
         },
-        plugins: (() => {
-            if(isProduction)
-                return [
-                    new uglifyJsPlugin({
-                        test: /\.js($|\?)/i,
-                        uglifyOptions: {
-                            output: {
-                                comments: false,
-                                 beautify: false
-                            }
-                        }
-                    }),
-                    new htmlWebpackPlugin({
-                        template: 'src/index.html',
-                        filename: 'index.html',
-                        minify: true
-                    })
-                ]
-            else
-                return [
-                    new liveReloadPlugin(),
-                    new webpack.HotModuleReplacementPlugin(),
-                    new htmlWebpackPlugin({
-                        template: 'src/index.html',
-                        filename: 'index.html'
-                    })
-                ]
-        })(),
+        plugins: plugins,
         module: {
             rules: [
                 {
@@ -51,6 +53,15 @@ module.exports = (env = {}) => {
                     exclude: /node_modules/,
                     use: 'babel-loader'
                 },
+                {
+                    test: /\.(sass|scss)$/,
+                    use: [
+                        'style-loader',
+                        miniCssExtractPlugin.loader,
+                        'css-loader',
+                        'sass-loader'
+                    ]
+                }
             ]
         },
         devServer: {
