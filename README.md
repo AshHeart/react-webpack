@@ -14,7 +14,9 @@ To build for production run ``` npm run build ```
 This will create a folder viz ``` ./dist ``` which will have all the files that can be directly served.
 
 ## Future Work
-* CSS and SASS parsing and injection can be added to webpack
 * PostCSS and Auto-Prefixing can be added
 * Minification of HTML and other files
 * Hashing can be applied to filenames to improve HMR
+
+## Changelog
+See changelog file [changelog.md](https://github.com/AshHeart/react-webpack/blob/master/changelog.md)
